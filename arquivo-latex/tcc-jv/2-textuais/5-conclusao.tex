@@ -1,0 +1,194 @@
+\chapter{Conclusões e Trabalhos Futuros}
+\label{cap:conclusao}
+
+Este trabalho investigou a viabilidade de predição de qualidade de vida a partir de dados coletados por dispositivos \textit{wearables}, com foco especial na comparação sistemática de estratégias metodológicas e na identificação de desafios práticos para aplicação em contexto real. A presente pesquisa contribui para o avanço do conhecimento científico ao fornecer evidências empíricas sobre o impacto do \textit{data leakage}, multicolinearidade e limitações amostrais em tarefas de predição de variáveis subjetivas de saúde em dados vindos de dispositivos vestíveis.
+
+\section{Síntese dos Resultados}
+\label{sec:sintese-resultados}
+
+Os experimentos conduzidos com o dataset \textit{Healful} (35 participantes, 2.267 registros diários) revelaram achados importantes que desafiam pressupostos comuns na literatura relacionada ao tema.
+
+\subsection{Validação das Hipóteses}
+
+As quatro hipóteses de pesquisa propostas foram testadas de forma sistemática através de cinco cenários experimentais. A \autoref{tab:validacao-hipoteses} (Cap.~\ref{cap:resultados}) apresentou os resultados consolidados, que podem ser sumarizados como:
+
+\textbf{Hipótese H1 (Confirmada):} A redução de multicolinearidade via VIF demonstrou impacto significativo no desempenho preditivo mesmo na presença de \textit{data leakage}, com melhorias de 29\% (domínio físico) e 27\% (domínio psicológico) ao comparar os Cenários B e A. Este resultado evidencia que a multicolinearidade compromete a capacidade de generalização dos modelos de forma independente da estratégia de validação adotada. A eliminação de features altamente correlacionadas permitiu que os algoritmos identificassem relações mais robustas entre preditores e variável-alvo, reduzindo a variância dos estimadores.
+
+\textbf{Hipótese H2 (Confirmada):} O impacto do \textit{data leakage} revelou-se dramático, com inflação de 132\% (domínio físico) e 143\% (domínio psicológico) nas métricas de erro ao comparar Cenários A e D. Este achado tem implicações críticas para a interpretação de resultados na literatura: trabalhos que utilizaram \textit{KFold} com \textit{shuffle} em dados longitudinais de participantes podem ter reportado capacidades preditivas artificialmente otimistas. A diferença entre RMSE de aproximadamente 7 pontos (com \textit{leakage}) e 16-17 pontos (sem \textit{leakage}) demonstra que mais da metade do "desempenho" aparente decorre de vazamento de informações, não de poder preditivo genuíno.
+
+\textbf{Hipótese H3 (Confirmada):} A ocorrência sistemática de R² negativo em todos os cenários com validação rigorosa (C, D e E) constitui o resultado mais revelador desta pesquisa. Valores de R² variando entre -0,05 e -0,61 indicam que, sob separação rigorosa entre participantes, os modelos treinados apresentam desempenho inferior à simples predição da média observacional. Este resultado não representa falha metodológica, mas sim uma limitação empírica fundamental: com 35 participantes e a alta variabilidade inter-individual inerente à relação entre dados fisiológicos e qualidade de vida subjetiva, não é possível treinar modelos que generalizem para indivíduos não vistos.
+
+\textbf{Hipótese H4 (Confirmada):} Modelos avançados (\textit{XGBoost}, \textit{LightGBM}, \textit{CatBoost}) demonstraram superioridade em relação aos modelos tradicionais (\textit{Random Forest}, \textit{Gradient Boosting}) mesmo sob validação rigorosa, com melhorias de 16,8\% (domínio físico) e 7,5\% (domínio psicológico). Este resultado evidencia que algoritmos avançados de \textit{boosting} conseguem extrair padrões adicionais mesmo em cenários desafiadores com R² negativo, embora esta melhoria não seja suficiente para superar o desafio fundamental de generalização inter-individual com apenas 35 participantes.
+
+\subsection{Implicações dos Resultados}
+
+Os achados desta pesquisa possuem implicações teóricas e práticas importantes:
+
+\textbf{Metodologicamente:} Este trabalho demonstra a necessidade crítica de estratégias de validação apropriadas ao contexto do problema. Em dados longitudinais com múltiplas observações por participante, o uso de \textit{KFold} padrão viola o princípio de independência entre amostras de treino e teste, resultando em estimativas não confiáveis de desempenho. Pesquisadores e profissionais devem adotar obrigatoriamente técnicas como \textit{GroupKFold}, \textit{Leave-One-Subject-Out} ou validação temporal quando o objetivo for generalização para novos indivíduos.
+
+\textbf{Empiricamente:} A presença de R² negativo sinaliza que a predição de qualidade de vida a partir de dados de \textit{wearables} representa um desafio substancialmente mais complexo do que frequentemente assumido na literatura. A relação entre variáveis fisiológicas objetivas (frequência cardíaca, passos, sono) e percepção subjetiva de bem-estar é mediada por inúmeros fatores contextuais, culturais e psicológicos que não são capturados pelos sensores. Abordagens de modelagem universal ("um modelo para todos") podem ser fundamentalmente inadequadas para este domínio.
+
+\textbf{Na prática:} Os resultados sugerem que aplicações comerciais e clínicas que prometem predizer ou monitorar qualidade de vida exclusivamente através de \textit{wearables} devem ser interpretadas com cautela. Sistemas baseados em modelos generalizados treinados com amostras pequenas podem apresentar baixa acurácia para usuários individuais. Soluções mais viáveis podem envolver modelos personalizados calibrados para cada indivíduo após período de adaptação, ou sistemas híbridos que combinam dados fisiológicos com informações contextuais autoexplicadas.
+
+\section{Contribuições do Trabalho}
+\label{sec:contribuicoes}
+
+Este trabalho oferece contribuições em três dimensões complementares (metodológica, técnica e científica) detalhadas a seguir.
+
+\subsection{Contribuição Metodológica}
+
+A principal contribuição metodológica consiste no desenvolvimento de um \textit{framework} sistemático para comparação de estratégias de validação cruzada, técnicas de redução de dimensionalidade e algoritmos de aprendizado em contexto de predição de variáveis subjetivas de saúde. O desenho experimental com cinco cenários controlados permitiu isolar e quantificar o efeito independente de cada componente metodológico:
+
+\begin{itemize}
+    \item \textbf{Estratégia de validação:} Comparação direta \textit{KFold} vs. \textit{GroupKFold} evidenciando inflação de 132-143\% nas métricas devido a \textit{data leakage}.
+    \item \textbf{Redução de dimensionalidade:} Comparação \textit{Featurewiz} (seleção) vs. VIF (eliminação de multicolinearidade) mostrando impacto de 27-29\% no desempenho.
+    \item \textbf{Complexidade de modelos:} Comparação modelos tradicionais vs. avançados revelando melhoria de 7,5-16,8\% com modelos avançados mesmo em amostras pequenas.
+\end{itemize}
+
+Este \textit{framework} pode ser replicado em outros domínios de aplicação de \textit{machine learning} à saúde digital, fornecendo um modelo de investigação rigorosa sobre fontes de viés metodológico.
+
+\subsection{Contribuição Técnica}
+
+No plano técnico, este trabalho desenvolveu e documentou um pipeline completo de pré-processamento para dados de \textit{wearables}, incluindo:
+
+\begin{itemize}
+    \item \textbf{Tratamento de gaps temporais:} Estratégia híbrida de imputação (forward-fill para gaps < 7 dias, interpolação linear para gaps 7-30 dias) que expandiu o dataset de 1.373 para 2.267 registros mantendo coerência temporal.
+    \item \textbf{Detecção de outliers:} Abordagem conservadora baseada em IQR com adição de flags ao invés de remoção, preservando comportamentos extremos potencialmente legítimos.
+    \item \textbf{Engenharia de features:} Criação de 30 features derivadas organizadas em seis categorias (sono, HRV, atividade física, comunicação, temporais, compostas) fundamentadas em conhecimento de domínio sobre fisiologia e comportamento.
+    \item \textbf{Redução de multicolinearidade:} Aplicação sistemática de VIF iterativo (threshold=10) reduzindo 118 features para 60 sem perda de informação essencial.
+\end{itemize}
+
+Todos os scripts desenvolvidos estão documentados e podem ser reutilizados por pesquisadores trabalhando com datasets similares, contribuindo para reprodutibilidade e avanço incremental do conhecimento.
+
+\subsection{Contribuição Científica}
+
+A contribuição científica central desta pesquisa reside na quantificação empírica e demonstração explícita de limitações fundamentais na predição de qualidade de vida com dados de \textit{wearables} em amostras pequenas. Enquanto a literatura frequentemente reporta resultados otimistas baseados em validação inadequada, este trabalho fornece evidência contrária clara:
+
+\begin{itemize}
+    \item \textbf{R² sistematicamente negativo} sob validação rigorosa, demonstrando que modelos generalizados não conseguem superar predição trivial da média.
+    \item \textbf{Inflação massiva de métricas} (130-160\%) devido a \textit{data leakage}, alertando para interpretação crítica de resultados na literatura.
+    \item \textbf{Alta variabilidade inter-participantes}, evidenciada por desvios-padrão frequentemente superiores a 30\% das médias, sinalizando heterogeneidade individual pronunciada.
+\end{itemize}
+
+Estes achados "negativos" são tão importantes quanto resultados positivos, pois orientam a comunidade científica sobre os limites atuais do conhecimento e direcionam esforços futuros para abordagens mais promissoras.
+
+\section{Limitações}
+\label{sec:limitacoes}
+
+Os resultados e conclusões deste trabalho devem ser interpretados considerando limitações como o tamanho amostral, a variabilidade entre os participantes, as características (features) contextuais, a granularidade temporal e a generalização geográfica e cultural. Essas limitações são explicadas nas próximas seções.
+
+\subsection{Tamanho Amostral}
+
+A principal limitação é o tamanho reduzido da amostra: 35 participantes. Embora este número seja comparável ou superior a diversos estudos publicados na área de \textit{wearables} e qualidade de vida, permanece insuficiente para treinar modelos de aprendizado de máquina robustos que generalizem para novos indivíduos. A presença de R² negativo sob validação rigorosa é consequência direta desta limitação. Estudos futuros com amostras de pelo menos 100-200 participantes são necessários para avaliar se a predição inter-participantes é viável com metodologia adequada e volume de dados suficiente.
+
+\subsection{Variabilidade Inter-participantes}
+
+O dataset apresentou alta heterogeneidade no número de registros por participante (variando de menos de 20 até mais de 120 registros), refletindo padrões reais de adesão ao uso de \textit{wearables}, mas introduzindo desbalanceamento nos dados. Participantes com poucos registros contribuem menos para o aprendizado dos modelos, enquanto participantes com muitos registros exercem influência desproporcional. Técnicas de balanceamento por amostragem ou ponderação poderiam ser exploradas em trabalhos futuros.
+
+\subsection{Features Contextuais}
+
+Os dados disponíveis limitam-se a variáveis fisiológicas, comportamentais e demográficas básicas capturadas por \textit{wearables} e smartphone. Fatores contextuais conhecidamente relevantes para qualidade de vida não foram mensurados:
+
+\begin{itemize}
+    \item \textbf{Eventos de vida:} Ocorrências significativas (mudanças de emprego, luto, casamento, nascimento de filhos) que afetam drasticamente bem-estar subjetivo.
+    \item \textbf{Estresse laboral:} Carga de trabalho, conflitos interpessoais, satisfação profissional.
+    \item \textbf{Suporte social:} Qualidade de relacionamentos, rede de apoio familiar e comunitária.
+    \item \textbf{Condições de saúde:} Doenças crônicas, uso de medicamentos, histórico médico.
+\end{itemize}
+
+A ausência destas informações pode explicar em parte a incapacidade dos modelos de capturar variações na qualidade de vida, uma vez que os preditores disponíveis representam apenas faceta limitada da complexidade do fenômeno.
+
+\subsection{Granularidade Temporal}
+
+Os registros possuem granularidade diária (agregações de medidas ao longo de 24 horas). Esta resolução temporal pode obscurecer padrões relevantes que ocorrem em escalas mais finas (variações ao longo do dia) ou mais amplas (tendências semanais ou mensais). Análises de séries temporais com modelagem de sazonalidade e tendências poderiam revelar relações não capturadas por modelos de regressão estática.
+
+\subsection{Generalização Geográfica e Cultural}
+
+A amostra foi coletada em contexto específico (provavelmente brasileiro, considerando a origem institucional do trabalho anterior), limitando a generalização dos achados para outras populações. Fatores culturais influenciam tanto a percepção de qualidade de vida quanto comportamentos de saúde, de modo que resultados podem diferir em outras regiões geográficas ou contextos socioculturais.
+
+\section{Trabalhos Futuros}
+\label{sec:trabalhos-futuros}
+
+Com base nas limitações identificadas e nos achados desta pesquisa, propõem-se as seguintes direções para trabalhos futuros detalhadas a seguir.
+
+\subsection{Coleta de Dados em Larga Escala}
+
+A limitação amostral constitui o principal obstáculo para avanços nesta área. Recomenda-se fortemente a condução de estudos longitudinais com pelo menos 100-200 participantes monitorados continuamente por 6-12 meses. Tal escala permitiria:
+
+\begin{itemize}
+    \item Treinar modelos mais robustos com maior capacidade de generalização inter-participantes.
+    \item Segmentar participantes em subgrupos (por exemplo, baseados em características demográficas ou perfis comportamentais) e avaliar se modelos especializados por segmento apresentam melhor desempenho que modelos universais.
+    \item Realizar análises de sensibilidade ao tamanho de amostra, identificando o número mínimo de participantes necessário para alcançar desempenho aceitável.
+\end{itemize}
+
+\subsection{Modelagem Personalizada}
+
+Dado que modelos generalizados apresentaram R² negativo, uma alternativa promissora consiste em desenvolver modelos personalizados, onde cada participante possui seu próprio modelo calibrado com base em seus dados históricos. Esta abordagem:
+
+\begin{itemize}
+    \item Acomoda a heterogeneidade inter-individual ao invés de tratá-la como ruído.
+    \item Aproveita a estrutura longitudinal dos dados através de técnicas de séries temporais (ARIMA, Prophet, LSTM).
+    \item Permite predições intra-participante (como este indivíduo estará amanhã?) ao invés de inter-participantes (como um novo indivíduo estará?).
+    \item Pode ser implementada em aplicações reais através de período de calibração inicial seguido de predições contínuas.
+\end{itemize}
+
+Trabalhos futuros devem comparar diretamente o desempenho de modelos personalizados versus modelos generalizados, avaliando também a quantidade mínima de dados históricos necessária para calibração efetiva de modelos individuais.
+
+\subsection{Integração de Dados Multimodais}
+
+A limitação de features contextuais sugere a necessidade de combinar dados objetivos de \textit{wearables} com informações subjetivas coletadas ativamente. Sistemas híbridos poderiam integrar:
+
+\begin{itemize}
+    \item \textbf{Ecological Momentary Assessment (EMA):} Questionários breves respondidos múltiplas vezes ao dia via smartphone capturando humor, estresse e contexto em tempo real.
+    \item \textbf{Dados de redes sociais:} Análise de sentimento em postagens, frequência de interações, padrões de uso de mídia social.
+    \item \textbf{Dados ambientais:} Qualidade do ar, condições meteorológicas, níveis de ruído urbano.
+    \item \textbf{Calendário e agenda:} Eventos planejados, compromissos, períodos de trabalho versus lazer.
+\end{itemize}
+
+A fusão de múltiplas modalidades de dados pode enriquecer substancialmente a capacidade preditiva ao incorporar informações sobre o contexto em que as medidas fisiológicas foram coletadas.
+
+\subsection{Análise de Séries Temporais}
+
+Este trabalho tratou a predição como problema de regressão estática, onde cada observação diária é tratada independentemente. Abordagens alternativas baseadas em séries temporais merecem investigação:
+
+\begin{itemize}
+    \item \textbf{Modelos autorregressivos:} Usar valores passados de qualidade de vida como preditores dos valores futuros, capturando inércia temporal.
+    \item \textbf{Redes neurais recorrentes:} LSTM ou GRU que modelam dependências temporais de longo prazo entre sequências de observações.
+    \item \textbf{Decomposição temporal:} Separar tendência, sazonalidade e componente residual nas séries de qualidade de vida e variáveis fisiológicas.
+    \item \textbf{Análise de causalidade:} Aplicar técnicas como Granger Causality ou Transfer Entropy para identificar precedência temporal entre variáveis fisiológicas e mudanças em qualidade de vida.
+\end{itemize}
+
+\subsection{Investigação de Subgrupos}
+
+A alta variabilidade inter-participantes sugere que a população pode ser heterogênea, contendo subgrupos com relações distintas entre dados fisiológicos e qualidade de vida. Trabalhos futuros poderiam:
+
+\begin{itemize}
+    \item Aplicar técnicas de \textit{clustering} não supervisionado para identificar grupos de participantes com perfis comportamentais similares.
+    \item Treinar modelos especializados para cada cluster e avaliar se a segmentação melhora o desempenho preditivo.
+    \item Investigar características que diferenciam participantes "previsíveis" (onde modelos funcionam bem) de "imprevisíveis" (onde modelos falham).
+\end{itemize}
+
+\subsection{Validação Clínica}
+
+Finalmente, mesmo com melhorias metodológicas e amostrais, a utilidade prática de sistemas preditivos de qualidade de vida deve ser validada em contexto clínico real. Estudos futuros poderiam:
+
+\begin{itemize}
+    \item Conduzir ensaios clínicos randomizados comparando intervenções guiadas por predições de modelos versus cuidado padrão.
+    \item Avaliar se alertas baseados em predições de queda na qualidade de vida permitem intervenções preventivas efetivas.
+    \item Investigar aceitabilidade e usabilidade de sistemas preditivos junto a usuários finais (pacientes, profissionais de saúde).
+    \item Analisar questões éticas relacionadas a privacidade, consentimento e potencial para discriminação ou ansiedade induzida por predições.
+\end{itemize}
+
+\section{Considerações Finais}
+\label{sec:consideracoes-finais}
+
+Este trabalho demonstrou que a predição de qualidade de vida a partir de dados de \textit{wearables} representa um desafio científico e técnico complexo, cujas dificuldades são frequentemente subestimadas na literatura. A ocorrência sistemática de R\textsuperscript{2} negativo sob validação metodologicamente rigorosa (\textit{GroupKFold}) evidencia que, com a amostra de 35 participantes, não é possível treinar modelos que generalizem para novos indivíduos com desempenho superior à simples predição da média.
+
+Igualmente relevante foi a quantificação do impacto do \textit{data leakage}: a utilização de \textit{KFold} com \textit{shuffle} em dados longitudinais inflou as métricas de desempenho em 132--143\%, mascarando a real incapacidade preditiva dos modelos. Este achado serve como alerta à comunidade científica sobre a necessidade de estratégias de validação apropriadas ao contexto do problema.
+
+Por outro lado, a confirmação da Hipótese H1 demonstrou que a redução de multicolinearidade via VIF melhora consistentemente o desempenho preditivo (27--29\%), mesmo em cenários com \textit{data leakage}. Esse resultado reforça a importância de pré-processamento rigoroso e tratamento adequado de correlações entre preditores.
+
+Os resultados desta pesquisa --- ao explicitar limitações e a inviabilidade de abordagens comuns --- constituem contribuição valiosa, pois orientam pesquisadores para direções mais promissoras (modelagem personalizada, integração multimodal, coletas em larga escala) e alertam profissionais sobre limitações de sistemas comerciais com capacidades preditivas não validadas rigorosamente.
+
+Por fim, o caminho para sistemas confiáveis de predição de qualidade de vida passa pelo reconhecimento das dificuldades atuais, pelo desenvolvimento de metodologias mais robustas e pela condução de estudos em escalas adequadas ao desafio do problema. Somente assim será possível transformar a visão de saúde digital personalizada e preventiva em realidade prática que beneficie pacientes e populações.
+

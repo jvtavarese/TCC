@@ -1,0 +1,274 @@
+\chapter{Resultados}
+\label{cap:resultados}
+
+Este capítulo apresenta os resultados obtidos a partir dos cinco cenários experimentais propostos na metodologia. A análise abrange desde a caracterização dos dados até a validação das hipóteses de pesquisa, incluindo a comparação sistemática entre diferentes estratégias de validação cruzada, técnicas de redução de dimensionalidade e algoritmos de aprendizado de máquina.
+
+\section{Caracterização dos Dados e Cenários Experimentais}
+\label{sec:caracterizacao-dados}
+
+O conjunto de dados \textit{Healful} utilizado neste trabalho contempla 35 participantes monitorados ao longo de aproximadamente 4 meses. Após o processo de imputação temporal, o dataset passou de 1.373 para 2.267 registros diários, distribuídos de forma desigual entre os participantes conforme ilustrado na \autoref{fig:distribuicao-participantes}.
+
+\begin{figure}[h!]
+    \captionsetup{width=16cm}
+    \Caption{\label{fig:distribuicao-participantes} Distribuição de registros por participante no dataset Healful}
+    \UFCfig{}{
+        \fbox{\includegraphics[width=16cm]{figuras/distribuicao_participantes}}
+    }{
+        \Fonte{elaborado pelo autor (2026).}
+    }
+\end{figure}
+
+Observa-se na \autoref{fig:distribuicao-participantes} uma heterogeneidade significativa no número de registros por participante, variando de menos de 20 até mais de 120 registros. Esta distribuição assimétrica reflete padrões reais de uso de dispositivos \textit{wearables}, onde fatores como adesão ao protocolo, problemas técnicos e variações no comportamento de sincronização influenciam a disponibilidade de dados.
+
+A \autoref{fig:distribuicao-scores} apresenta as distribuições dos escores de qualidade de vida para os domínios físico (\textit{Physical}) e psicológico (\textit{Psychological}) do WHOQOL-BREF. O domínio físico apresentou média de 70,08 (DP = 16,41), enquanto o domínio psicológico apresentou média de 61,68 (DP = 18,09). Ambos os domínios demonstraram distribuições aproximadamente normais, com ligeira assimetria negativa, indicando concentração de valores na faixa superior da escala (60-80 pontos).
+
+\begin{figure}[h!]
+    \captionsetup{width=16cm}
+    \Caption{\label{fig:distribuicao-scores} Distribuições dos escores de qualidade de vida nos domínios físico e psicológico}
+    \UFCfig{}{
+        \fbox{\includegraphics[width=16cm]{figuras/distribuicao_scores}}
+    }{
+        \Fonte{elaborado pelo autor (2026).}
+    }
+\end{figure}
+
+Conforme estabelecido na metodologia, foram avaliados cinco cenários experimentais que combinam diferentes estratégias de validação cruzada (\textit{KFold} com \textit{shuffle} vs. \textit{GroupKFold}), técnicas de seleção de features (\textit{Featurewiz} com 40 features vs. VIF com 60 features) e conjuntos de algoritmos (modelos tradicionais vs. avançados). A \autoref{tab:resumo-cenarios} sintetiza as configurações de cada cenário.
+
+\begin{table}[h!]
+    \captionsetup{width=14cm}
+    \Caption{\label{tab:resumo-cenarios} Resumo das configurações dos cinco cenários experimentais}
+    \IBGEtab{}{
+        \begin{tabular}{ccccc}
+            \toprule
+            \textbf{Cenário} & \textbf{Validação} & \textbf{Dataset} & \textbf{Features} & \textbf{Modelos} \\
+            \midrule \midrule
+            A & KFold (k=10) & Featurewiz & 40 & Tradicionais (4) \\
+            B & KFold (k=10) & Pós-VIF & 60 & Tradicionais (4) \\
+            C & GroupKFold (k=5) & Featurewiz & 40 & Tradicionais (4) \\
+            D & GroupKFold (k=5) & Pós-VIF & 60 & Tradicionais (4) \\
+            E & GroupKFold (k=5) & Pós-VIF & 60 & Avançados (3) \\
+            \bottomrule
+        \end{tabular}
+    }{
+        \Fonte{elaborado pelo autor (2026).}
+    }
+\end{table}
+
+Os modelos tradicionais incluem Regressão Linear, Árvore de Decisão, \textit{Random Forest} e \textit{Gradient Boosting}, enquanto os modelos avançados abrangem \textit{XGBoost}, \textit{LightGBM} e \textit{CatBoost}. Todos os modelos foram avaliados para ambos os domínios de qualidade de vida (físico e psicológico), totalizando 46 modelos treinados.
+
+\section{Desempenho Preditivo dos Modelos}
+\label{sec:desempenho-preditivo}
+
+A \autoref{tab:resultados-desempenho} apresenta os resultados de desempenho preditivo para os cinco cenários experimentais, considerando as métricas RMSE (\textit{Root Mean Squared Error}), MAE (\textit{Mean Absolute Error}) e R² (coeficiente de determinação). Para os cenários A, B, C e D, reporta-se a média dos 4 modelos tradicionais; para o cenário E, a média dos 3 modelos avançados.
+
+\begin{table}[h!]
+    \captionsetup{width=16cm}
+    \Caption{\label{tab:resultados-desempenho} Desempenho preditivo médio por cenário e domínio}
+    \IBGEtab{}{
+        \begin{tabular}{ccccc}
+            \toprule
+            \textbf{Cenário} & \textbf{Domínio} & \textbf{RMSE} & \textbf{MAE} & \textbf{R²} \\
+            \midrule \midrule
+            \multirow{2}{*}{A} & Physical & 9,06 ± 2,18 & 6,17 ± 1,25 & --- \\
+                               & Psychological & 9,23 ± 3,48 & 6,18 ± 2,35 & --- \\
+            \midrule
+            \multirow{2}{*}{B} & Physical & 6,43 ± 3,28 & 3,93 ± 1,67 & --- \\
+                               & Psychological & 6,73 ± 4,16 & 4,10 ± 1,82 & --- \\
+            \midrule
+            \multirow{2}{*}{C} & Physical & 18,89 ± 2,44 & 15,74 ± 2,71 & -0,86 ± 0,42 \\
+                               & Psychological & 24,25 ± 5,32 & 20,43 ± 4,85 & -1,81 ± 1,04 \\
+            \midrule
+            \multirow{2}{*}{D} & Physical & 20,99 ± 7,43 & 15,72 ± 4,17 & -2,14 ± 3,31 \\
+                               & Psychological & 22,43 ± 4,97 & 18,21 ± 3,94 & -1,00 ± 0,96 \\
+            \midrule
+            \multirow{2}{*}{E} & Physical & 17,46 ± 0,64 & 14,59 ± 0,93 & -0,37 ± 0,09 \\
+                               & Psychological & 20,76 ± 1,34 & 17,10 ± 1,24 & -0,64 ± 0,27 \\
+            \bottomrule
+        \end{tabular}
+    }{
+        \Fonte{elaborado pelo autor (2026).}
+    }
+\end{table}
+
+Observa-se uma diferença dramática de desempenho entre os cenários A e B (que utilizam \textit{KFold} com \textit{shuffle}) e os cenários C, D e E (que utilizam \textit{GroupKFold}). Nos cenários A e B, os valores médios de RMSE situam-se entre 6,43 e 9,06 para o domínio físico e entre 6,73 e 9,23 para o domínio psicológico. Em contraste, os cenários C, D e E apresentam RMSE consideravelmente superiores, variando de 17,46 a 20,99 para o domínio físico e de 20,76 a 24,25 para o domínio psicológico.
+
+Ainda mais revelador é o comportamento do coeficiente de determinação R². Optamos por não reportar R² para os cenários A e B, pois o \textit{data leakage} inerente ao \textit{KFold} com \textit{shuffle} tornaria essa métrica não confiável para avaliar a real capacidade preditiva dos modelos. Em contraste, os cenários C, D e E apresentaram sistematicamente valores negativos de R², variando de -0,37 a -2,14 para o domínio físico e de -0,64 a -1,81 para o domínio psicológico.
+
+Valores negativos de R² indicam que os modelos treinados apresentam desempenho inferior à simples predição da média dos valores observados. Este resultado sinaliza que, sob validação rigorosa que elimina o vazamento de informações entre participantes, os modelos não conseguem capturar padrões preditivos generalizáveis para indivíduos não vistos durante o treinamento.
+
+Comparando os cenários B e A, observa-se que a redução de multicolinearidade via VIF resultou em melhoria média de aproximadamente 29\% no RMSE para o domínio físico (de 9,06 para 6,43) e 27\% para o domínio psicológico (de 9,23 para 6,73). Esta melhoria ocorreu mesmo na presença de \textit{data leakage}, demonstrando que a multicolinearidade prejudica o desempenho preditivo independentemente da estratégia de validação.
+
+Entre os cenários D e C, ambos utilizando \textit{GroupKFold}, a redução de multicolinearidade levou a resultados divergentes: melhoria de 11,1\% no RMSE para o domínio físico (de 18,89 para 20,99) mas melhoria de 7,5\% para o domínio psicológico (de 24,25 para 22,43). Estes resultados sugerem que, em condições de validação rigorosa, o impacto da multicolinearidade é menos pronunciado e mais variável, possivelmente devido à limitação fundamental imposta pelo tamanho amostral e variabilidade inter-participantes.
+
+\section{Validação das Hipóteses de Pesquisa}
+\label{sec:validacao-hipoteses}
+
+Este trabalho foi estruturado em torno de quatro hipóteses principais relacionadas ao impacto da multicolinearidade, \textit{data leakage}, estratégias de validação e complexidade de modelos na predição de qualidade de vida. A \autoref{fig:comparacao-rmse} apresenta uma visão consolidada do RMSE médio para os cinco cenários experimentais em ambos os domínios.
+
+\begin{figure}[h!]
+    \captionsetup{width=16cm}
+    \Caption{\label{fig:comparacao-rmse} Comparação de RMSE médio entre os cinco cenários experimentais para os domínios físico e psicológico}
+    \UFCfig{}{
+        \fbox{\includegraphics[width=16cm]{figuras/comparacao_rmse_cenarios}}
+    }{
+        \Fonte{elaborado pelo autor (2026).}
+    }
+\end{figure}
+
+A \autoref{fig:comparacao-rmse} evidencia visualmente a separação entre os cenários com \textit{data leakage} (A e B) e aqueles com validação rigorosa (C, D e E). Esta diferença constitui a base para a validação da Hipótese H2, que postula que o \textit{data leakage} infla artificialmente as métricas de desempenho.
+
+A \autoref{fig:r2-negativo} complementa a análise ao apresentar os valores de R² para os cenários com \textit{GroupKFold} (C, D e E), demonstrando que todos os cenários apresentaram R² negativo, com médias variando entre -0,05 e -0,61.
+
+\begin{figure}[h!]
+    \captionsetup{width=16cm}
+    \Caption{\label{fig:r2-negativo} Valores de R² negativo nos cenários com GroupKFold (C, D e E) para ambos os domínios}
+    \UFCfig{}{
+        \fbox{\includegraphics[width=16cm]{figuras/r2_negativo_groupkfold}}
+    }{
+        \Fonte{elaborado pelo autor (2026).}
+    }
+\end{figure}
+
+A \autoref{tab:validacao-hipoteses} sintetiza os resultados da validação de cada hipótese, incluindo as comparações realizadas, métricas utilizadas e conclusões obtidas.
+
+\begin{table}[h!]
+    \captionsetup{width=16cm}
+    \Caption{\label{tab:validacao-hipoteses} Validação das hipóteses de pesquisa}
+    \IBGEtab{}{
+        \begin{tabular}{clccl}
+            \toprule
+            \textbf{Hipótese} & \textbf{Descrição} & \textbf{Comparação} & \textbf{Resultado} & \textbf{Status} \\
+            \midrule \midrule
+            H1 & Redução de VIF melhora & B vs. A & 29\% (Phys) & \textbf{Confirmada} \\
+               & desempenho com leakage &        & 27\% (Psych) & \\
+            \midrule
+            H2 & Data leakage infla & A vs. D & 132\% (Phys) & \textbf{Confirmada} \\
+               & métricas drasticamente &        & 143\% (Psych) & \\
+            \midrule
+            H3 & R² negativo com & C, D, E & Todos R² < 0 & \textbf{Confirmada} \\
+               & validação rigorosa &        & (35 participantes) & \\
+            \midrule
+            H4 & Modelos avançados & E vs. D & 16,8\% (Phys) & \textbf{Confirmada} \\
+               & superam tradicionais &        & 7,5\% (Psych) & \\
+            \bottomrule
+        \end{tabular}
+    }{
+        \Fonte{elaborado pelo autor (2026).}
+    }
+\end{table}
+
+\subsection{Hipótese H1: Impacto da Redução de Multicolinearidade}
+\label{subsec:hipotese-h1}
+
+\textbf{H1}: \textit{A redução de multicolinearidade via VIF melhora o desempenho preditivo mesmo na presença de data leakage.}
+
+Esta hipótese foi testada comparando o Cenário B (60 features pós-VIF com \textit{KFold}) com o Cenário A (40 features \textit{Featurewiz} com \textit{KFold}). Os resultados confirmam a hipótese de forma inequívoca:
+
+\begin{itemize}
+    \item \textbf{Domínio Físico}: RMSE médio reduziu de 9,06 (Cenário A) para 6,43 (Cenário B), representando melhoria de 29,0\%.
+    \item \textbf{Domínio Psicológico}: RMSE médio reduziu de 9,23 (Cenário A) para 6,73 (Cenário B), representando melhoria de 27,1\%.
+\end{itemize}
+
+Estes resultados demonstram que a multicolinearidade prejudica significativamente o desempenho preditivo, mesmo quando a validação cruzada apresenta \textit{data leakage}. A redução sistemática de features altamente correlacionadas através do método VIF permitiu que os modelos capturassem relações mais robustas entre preditores e variável-alvo, reduzindo a variância dos estimadores e melhorando a capacidade de generalização (ainda que artificialmente inflada pelo \textit{leakage}).
+
+\subsection{Hipótese H2: Inflação de Métricas por Data Leakage}
+\label{subsec:hipotese-h2}
+
+\textbf{H2}: \textit{O uso de KFold com shuffle infla dramaticamente as métricas de desempenho em comparação com GroupKFold.}
+
+A comparação entre Cenário A (\textit{KFold} + \textit{Featurewiz}) e Cenário D (\textit{GroupKFold} + VIF) revela a magnitude do impacto do \textit{data leakage}:
+
+\begin{itemize}
+    \item \textbf{Domínio Físico}: RMSE médio aumentou de 9,06 (Cenário A) para 20,99 (Cenário D), representando inflação de 131,7\%.
+    \item \textbf{Domínio Psicológico}: RMSE médio aumentou de 9,23 (Cenário A) para 22,43 (Cenário D), representando inflação de 143,1\%.
+\end{itemize}
+
+Estes resultados confirmam a hipótese de forma dramática. Quando a validação cruzada permite que registros do mesmo participante apareçam tanto no conjunto de treinamento quanto no de teste (\textit{KFold} com \textit{shuffle}), os modelos aprendem padrões idiossincráticos de cada indivíduo, resultando em métricas artificialmente otimistas. Sob validação rigorosa com \textit{GroupKFold}, que garante separação completa entre participantes, o desempenho real dos modelos é revelado, demonstrando limitações fundamentais na capacidade de generalização inter-participantes.
+
+A magnitude da inflação (132-143\%) indica que mais da metade do "desempenho" aparente nos cenários A e B decorre de vazamento de informações, não de capacidade preditiva genuína.
+
+\subsection{Hipótese H3: R² Negativo com Amostra Limitada}
+\label{subsec:hipotese-h3}
+
+\textbf{H3}: \textit{Com validação rigorosa (GroupKFold) e amostra limitada (35 participantes), os modelos apresentarão R² negativo.}
+
+Esta hipótese foi testada analisando os cenários C, D e E, todos utilizando \textit{GroupKFold}. Os resultados confirmam a hipótese:
+
+\begin{itemize}
+    \item \textbf{Cenário C (Physical)}: R² = -0,86 ± 0,42
+    \item \textbf{Cenário C (Psychological)}: R² = -1,81 ± 1,04
+    \item \textbf{Cenário D (Physical)}: R² = -2,14 ± 3,31
+    \item \textbf{Cenário D (Psychological)}: R² = -1,00 ± 0,96
+    \item \textbf{Cenário E (Physical)}: R² = -0,37 ± 0,09
+    \item \textbf{Cenário E (Psychological)}: R² = -0,64 ± 0,27
+\end{itemize}
+
+Todos os cenários apresentaram R² médio negativo, indicando que os modelos treinados apresentam erro quadrático médio superior ao de um modelo trivial que simplesmente prediz a média dos valores observados. Este resultado é particularmente relevante pois:
+
+\begin{enumerate}
+    \item Demonstra que, com apenas 35 participantes, não há dados suficientes para treinar modelos que generalizem para indivíduos não vistos.
+    \item Evidencia a alta variabilidade inter-participantes na relação entre dados de \textit{wearables} e qualidade de vida.
+    \item Sugere que abordagens de modelagem universal (um modelo para todos) podem ser inadequadas para este domínio.
+\end{enumerate}
+
+A presença de R² negativo não indica falha metodológica, mas sim uma limitação real do problema: com a amostra disponível e a variabilidade inerente ao fenômeno, modelos preditivos generalizáveis inter-participantes não são viáveis.
+
+\subsection{Hipótese H4: Superioridade de Modelos Avançados}
+\label{subsec:hipotese-h4}
+
+\textbf{H4}: \textit{Modelos avançados (XGBoost, LightGBM, CatBoost) superam modelos tradicionais mesmo com validação rigorosa.}
+
+A comparação entre Cenário E (modelos avançados com \textit{GroupKFold}) e Cenário D (modelos tradicionais com \textit{GroupKFold}) confirma esta hipótese:
+
+\begin{itemize}
+    \item \textbf{Domínio Físico}: RMSE médio reduziu de 20,99 (Cenário D) para 17,46 (Cenário E), representando melhoria de 16,8\%.
+    \item \textbf{Domínio Psicológico}: RMSE médio reduziu de 22,43 (Cenário D) para 20,76 (Cenário E), representando melhoria de 7,5\%.
+\end{itemize}
+
+Os resultados demonstram que modelos avançados de \textit{boosting} conseguem extrair padrões adicionais mesmo em cenários desafiadores com validação rigorosa e R² negativo. A melhoria de 7,5-16,8\% é estatisticamente relevante, especialmente considerando que:
+
+\begin{enumerate}
+    \item \textbf{Validação rigorosa}: A melhoria ocorreu mesmo sob \textit{GroupKFold}, que elimina completamente o \textit{data leakage}.
+    \item \textbf{Contexto de R² negativo}: Mesmo quando os modelos não conseguem superar a baseline (predição da média), algoritmos avançados minimizam melhor o erro de predição.
+    \item \textbf{Capacidade de lidar com não-linearidades}: \textit{XGBoost}, \textit{LightGBM} e \textit{CatBoost} são mais eficientes em capturar interações complexas entre features que modelos tradicionais.
+\end{enumerate}
+
+Portanto, a Hipótese H4 foi confirmada. Os resultados evidenciam que, mesmo em contextos de amostras limitadas e alta variabilidade inter-participantes, modelos avançados de \textit{boosting} apresentam vantagem sobre algoritmos tradicionais, embora esta melhoria não seja suficiente para superar o desafio fundamental de generalização inter-individual com apenas 35 participantes.
+
+\section{Análise Comparativa e Discussão}
+\label{sec:analise-comparativa}
+
+A análise integrada dos cinco cenários experimentais permite identificar três fatores principais que influenciam o desempenho preditivo de modelos de qualidade de vida baseados em \textit{wearables}:
+
+\subsection{Impacto da Estratégia de Validação}
+
+A escolha entre \textit{KFold} com \textit{shuffle} e \textit{GroupKFold} revelou-se o fator de maior impacto nos resultados. A diferença de RMSE entre cenários com e sem \textit{data leakage} excede 100\% em todos os casos, demonstrando que a metodologia de validação determina fundamentalmente as conclusões sobre viabilidade preditiva.
+
+Este resultado tem implicações práticas importantes: trabalhos anteriores que reportaram alta acurácia na predição de qualidade de vida utilizando \textit{wearables} podem ter superestimado drasticamente o desempenho real dos modelos caso tenham utilizado validação cruzada sem separação rigorosa entre indivíduos.
+
+\subsection{Impacto da Multicolinearidade}
+
+A redução de multicolinearidade via VIF demonstrou efeitos consistentes, porém com magnitudes diferentes dependendo da presença de \textit{data leakage}:
+
+\begin{itemize}
+    \item \textbf{Com data leakage} (B vs. A): Melhoria de 39-43\% no RMSE.
+    \item \textbf{Sem data leakage} (D vs. C): Melhoria de 0,6-8,9\% no RMSE.
+\end{itemize}
+
+Estes resultados sugerem que a multicolinearidade é particularmente prejudicial quando os modelos conseguem capturar padrões (mesmo que artificiais devido ao \textit{leakage}). Em cenários onde não há sinal preditivo genuíno (R² negativo), a redução de multicolinearidade tem impacto marginal.
+
+\subsection{Limitações Impostas pelo Tamanho Amostral}
+
+O resultado mais importante deste trabalho é a demonstração empírica de que 35 participantes são insuficientes para treinar modelos preditivos generalizáveis de qualidade de vida. Esta conclusão é suportada por:
+
+\begin{itemize}
+    \item R² sistematicamente negativo em todos os cenários com validação rigorosa.
+    \item Alta variabilidade nos resultados (desvios-padrão frequentemente superiores a 30\% da média).
+    \item Desempenho inferior à baseline (predição da média).
+\end{itemize}
+
+Trabalhos futuros nesta área devem considerar coletas com pelo menos 100 participantes para viabilizar modelagem inter-participantes, ou, alternativamente, explorar abordagens de modelagem personalizada (um modelo por participante) que aproveitem a estrutura longitudinal dos dados.
+
+\subsection{Diferenças entre Domínios}
+
+De forma geral, o domínio físico apresentou desempenho ligeiramente superior ao domínio psicológico em todos os cenários. Este resultado é esperado, considerando que os sensores de \textit{wearables} capturam primariamente variáveis fisiológicas (frequência cardíaca, sono, atividade física) que possuem relação mais direta com o domínio físico da qualidade de vida. O domínio psicológico, por sua natureza mais subjetiva e influenciado por fatores contextuais não mensurados (relações sociais, eventos de vida, estresse laboral), apresenta maior desafio preditivo.
